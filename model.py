@@ -1,3 +1,9 @@
+#set these imports to ensure repeatable results
+from numpy.random import seed
+seed(1)
+from tensorflow import set_random_seed
+set_random_seed(2)
+
 from keras.models import Sequential
 from keras.layers import Flatten, Dense, Lambda, Dropout, Input
 from keras.layers import Conv2D, Cropping2D, BatchNormalization, MaxPooling2D
@@ -21,8 +27,6 @@ import os
 from matplotlib import pyplot as plt
 
 os.system("rm -f model.h5")
-
-
 model = Sequential()
 
 model.add(Lambda(lambda x: x / 127.5 - 1.0, input_shape=(160, 320, 3)))
@@ -32,7 +36,6 @@ model.add(Conv2D(32, (3, 3), padding='same', strides=(2, 2), activation='relu', 
     #model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=(2, 2), strides=None, padding='same'))
 model.add(Conv2D(64, (3, 3), padding='same', strides=(2, 2), activation='relu', name='Conv2'))
-    #model.add(BatchNormalization())
 model.add(MaxPooling2D(pool_size=(2, 2), strides=None, padding='same'))
 model.add(Conv2D(128, (3, 3), padding='same', strides=(1, 1), activation='relu', name='Conv3'))
 model.add(MaxPooling2D(pool_size=(2, 2), strides=None, padding='same'))
@@ -47,6 +50,7 @@ model.add(Dense(128, activation='linear', name='FC2'))
 model.add(Dropout(0.5))
 
 model.add(Dense(64, activation='linear', input_shape=(128,), name='FC3'))
+model.add(Dense(16, activation='linear', input_shape=(64,), name='FC4'))
 model.add(Dense(1, name='angle_out'))
 
 model.summary()
@@ -68,8 +72,7 @@ model.compile(optimizer='adam', loss= {'angle_out': 'mean_squared_error'})
 
 ##train
 
-
-#folders = ['AlexT-1', 'AlexT-2', 'AlexT-3']
+#folders = ['AlexT-1']
 folders = ['AlexT-1', 'AlexT-2', 'AlexT-3', 'AlexT-4']
 df = gd.assemble_data(folders)
 df = gd.clean_dataframe(df)
@@ -77,7 +80,7 @@ df = df.sample(frac=1).reset_index(drop=True)
 
 # train the network
 initial_batch_size = 128
-epochs = 6
+epochs = 3
 
 #batch_size = 128
 train_cost = []

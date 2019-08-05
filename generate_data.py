@@ -69,28 +69,37 @@ def assemble_data(folders):
 
 def flip_coin(prob=0.5):
     return True if bernoulli.rvs(prob) == 1 else False  
-
 def clean_dataframe(df):
    #print(np.max(df['angles']))
    #print(df)
 
-   #eliminate the left and right camera images that are large
-   bigturn_index = df[ (df['angles'] < -.05) | (df['angles'] > .05) ].index
+   #eliminate big turns on the entire dataset
+   # adjust this parameter if the car goes too straight
+   bigturn_index = df[df['angles'].abs() > 1.0].index
+   df.drop(bigturn_index, inplace=True)
+   #print(df)
+   #find appropriate images from left and right cameras to use.  Consider the following:
+   #a left camera view when the car is pointed way left is not useful since the only camera
+   #we train for is a central camera.  Likewise for far right images.
+   #left_camera_index = df[df['images'].str.contains('left')].index
+   #right_camera_index = df[df['images'].str.contains('right')].index
+   #bigturn_index = df[df['angles'].abs() > .4].index
+   #df.drop(bigturn_index & left_camera_index, inplace=True)
+   #df.drop(bigturn_index & right_camera_index, inplace=True)
+
    left_camera_index = df[df['images'].str.contains('left')].index
    right_camera_index = df[df['images'].str.contains('right')].index
-   #df = df.drop(bigturn_index & left_camera_index)
-   #df = df.drop(bigturn_index & right_camera_index)
-   #df = df.drop(left_camera_index)
-   #df = df.drop(right_camera_index)
-   #take the remaining left and right camera images and add to the angle
-   left_camera_index = df[ df['images'].str.contains('left')].index
-   right_camera_index = df[df['images'].str.contains('right')].index
-   df.loc[left_camera_index,'angles'] += .25
-   df.loc[right_camera_index,'angles'] += -.25
+
+   #df.loc[left_camera_index, 'angles'] *= -1.0
+   df.loc[left_camera_index, 'angles'] = 0.25
+
+   #df.loc[right_camera_index, 'angles'] *= -1.0
+   df.loc[right_camera_index, 'angles'] = -0.25
 
 
-   df['rank']=df.angles.rank(method='first').astype(int)
-   df['inv_rank']=df.angles.rank(ascending=False, method='first').astype(int)
+   ##add a rank column for elimination of the angesl that are too large
+   #df['rank']=df.angles.rank(method='first').astype(int)
+   #df['inv_rank']=df.angles.rank(ascending=False, method='first').astype(int)
     
    return df
 
@@ -117,7 +126,7 @@ def gen_image(df, candidates, generate=True):
         
       if flip_coin():
           search_angle = angle * -1
-          # print("search angle", search_angle)
+          #print("search angle", search_angle)
           index = (np.abs(all_angles-search_angle)).idxmin()
           flipper = df[df['angles'] == all_angles[index]]
           imname = flipper['images'].tolist()[0]
