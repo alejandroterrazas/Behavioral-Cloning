@@ -1,7 +1,7 @@
 # Behavioral-Cloning
 Udacity SDC Project 4
 
-This is a series of model developed in Keras as the main deliverable for the Udacity Self-driving car Engineering 
+This is a series of models developed as the main deliverable for the Udacity Self-driving car Engineering 
 Nanodegree (Term 1).  The project is designed to teach aspects of behavioral cloning, where a machine learning-
 computer vison algorithm is trained to mimic the user's behavior on the Udacity SDC behavioral simulator.
 
